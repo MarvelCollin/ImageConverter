@@ -1,69 +1,77 @@
-# React + TypeScript + Vite
+# Image Converter
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A browser-based image conversion tool built with React, TypeScript, and Vite. Convert images between multiple formats with support for individual files, batch processing, and ZIP archive handling.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Core Functionality
+- **Multi-format Support**: Convert between PNG, JPG/JPEG, WEBP, BMP, and GIF formats
+- **Auto-format Detection**: Automatically detect input image format
+- **Batch Processing**: Convert multiple images simultaneously
+- **ZIP Archive Support**: Extract and convert images from ZIP files while preserving folder structure
 
-## Expanding the ESLint configuration
+### File Operations
+- **Drag & Drop Interface**: Intuitive file upload with drag-and-drop support
+- **Multiple File Selection**: Select and process multiple images at once
+- **Individual File Management**: Convert, download, or remove individual images
+- **Bulk Operations**: Convert all images, download all individually, or package as ZIP
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Download Options
+- **Individual Downloads**: Download converted images one by one
+- **Bulk Downloads**: Download all converted images separately
+- **ZIP Package**: Download all converted images as a single ZIP archive
+- **Original Structure Preservation**: Maintain folder structure from original ZIP files
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### User Interface
+- **Modern Design**: Clean, responsive interface with gradient backgrounds
+- **Real-time Status**: Visual indicators for conversion progress
+- **Format Selection**: Easy-to-use dropdowns for input and output format selection
+- **Image Grid**: Visual grid display of all uploaded and converted images
+- **Mobile Responsive**: Optimized for both desktop and mobile devices
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+### Technical Features
+- **Canvas-based Conversion**: Uses HTML5 Canvas for client-side image processing
+- **No Server Required**: All processing happens in the browser
+- **High Quality Output**: Configurable quality settings for JPEG compression (90% quality)
+- **Memory Efficient**: Proper cleanup and URL management for large files
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Application Showcase 
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Supported Formats
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Input Formats
+- PNG
+- JPG/JPEG
+- WEBP
+- BMP
+- GIF
+- ZIP archives containing images
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Output Formats
+- PNG
+- JPG/JPEG
+- WEBP
+- BMP
+- GIF
+
+## Installation & Development
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Start development server:
+   ```bash
+   npm run dev
+   ```
+
+3. Build for production:
+   ```bash
+   npm run build
+   ```
+
+4. Preview production build:
+   ```bash
+   npm run preview
+   ```

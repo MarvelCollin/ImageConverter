@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import JSZip from 'jszip'
-import type { ImageFile, ConvertOptions, SupportedFormat, ZipEntry } from '../interface/IImage'
+import type { ImageFile, ConvertOptions, SupportedFormat } from '../interface/IImage'
 
 export const useConvert = () => {
   const [images, setImages] = useState<ImageFile[]>([])

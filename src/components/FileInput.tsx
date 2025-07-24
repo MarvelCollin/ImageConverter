@@ -13,12 +13,6 @@ export const FileInput = ({ onFileSelect }: FileInputProps) => {
     onFileSelect(files)
   }
 
-  const resetInput = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
-  }
-
   return (
     <div className="mb-8">
       <div className="relative group">
