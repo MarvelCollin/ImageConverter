@@ -19,6 +19,7 @@ function App() {
     convertAllImages,
     downloadSingleImage,
     downloadAllImages,
+    downloadAllImagesAsZip,
     removeImage,
     resetImages
   } = useConvert()
@@ -37,6 +38,10 @@ function App() {
 
   const handleDownloadAll = () => {
     downloadAllImages(outputFormat)
+  }
+
+  const handleDownloadAllAsZip = () => {
+    downloadAllImagesAsZip(outputFormat)
   }
 
   const hasConvertedImages = images.some(img => img.convertedUrl)
@@ -70,6 +75,7 @@ function App() {
             hasConvertedImages={hasConvertedImages}
             onConvertAll={handleConvertAll}
             onDownloadAll={handleDownloadAll}
+            onDownloadAllAsZip={handleDownloadAllAsZip}
             onReset={resetImages}
           />
 

@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
-import type { ImageFile, ConvertOptions, SupportedFormat } from '../interface/IImage'
+import JSZip from 'jszip'
+import type { ImageFile, ConvertOptions, SupportedFormat, ZipEntry } from '../interface/IImage'
 
 export const useConvert = () => {
   const [images, setImages] = useState<ImageFile[]>([])
@@ -16,27 +17,85 @@ export const useConvert = () => {
     return 'png'
   }
 
-  const addImages = (files: FileList) => {
+  const addImages = async (files: FileList) => {
     const newImages: ImageFile[] = []
     
-    Array.from(files).forEach((file, index) => {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const imageFile: ImageFile = {
-          id: `${Date.now()}-${index}`,
-          file: file,
-          originalUrl: e.target?.result as string,
-          convertedUrl: null,
-          isConverting: false
-        }
-        newImages.push(imageFile)
-        
-        if (newImages.length === files.length) {
-          setImages(prev => [...prev, ...newImages])
-        }
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      
+      if (file.type === 'application/zip' || file.name.endsWith('.zip')) {
+        const zipImages = await extractImagesFromZip(file)
+        newImages.push(...zipImages)
+      } else if (file.type.startsWith('image/')) {
+        const reader = new FileReader()
+        await new Promise<void>((resolve) => {
+          reader.onload = (e) => {
+            const imageFile: ImageFile = {
+              id: `${Date.now()}-${i}`,
+              file: file,
+              originalUrl: e.target?.result as string,
+              convertedUrl: null,
+              isConverting: false
+            }
+            newImages.push(imageFile)
+            resolve()
+          }
+          reader.readAsDataURL(file)
+        })
       }
-      reader.readAsDataURL(file)
-    })
+    }
+    
+    setImages(prev => [...prev, ...newImages])
+  }
+
+  const extractImagesFromZip = async (zipFile: File): Promise<ImageFile[]> => {
+    const zip = new JSZip()
+    const zipContent = await zip.loadAsync(zipFile)
+    const images: ImageFile[] = []
+    
+    for (const [path, file] of Object.entries(zipContent.files)) {
+      if (!file.dir && isImageFile(path)) {
+        const blob = await file.async('blob')
+        const imageFile = new File([blob], path.split('/').pop() || path, { type: getImageMimeType(path) })
+        
+        const reader = new FileReader()
+        await new Promise<void>((resolve) => {
+          reader.onload = (e) => {
+            const image: ImageFile = {
+              id: `zip-${Date.now()}-${Math.random()}`,
+              file: imageFile,
+              originalUrl: e.target?.result as string,
+              convertedUrl: null,
+              isConverting: false,
+              zipPath: path
+            }
+            images.push(image)
+            resolve()
+          }
+          reader.readAsDataURL(imageFile)
+        })
+      }
+    }
+    
+    return images
+  }
+
+  const isImageFile = (filename: string): boolean => {
+    const imageExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.bmp', '.gif']
+    return imageExtensions.some(ext => filename.toLowerCase().endsWith(ext))
+  }
+
+  const getImageMimeType = (filename: string): string => {
+    const ext = filename.toLowerCase().split('.').pop()
+    switch (ext) {
+      case 'png': return 'image/png'
+      case 'jpg':
+      case 'jpeg': return 'image/jpeg'
+      case 'webp': return 'image/webp'
+      case 'bmp': return 'image/bmp'
+      case 'gif': return 'image/gif'
+      default: return 'image/png'
+    }
   }
 
   const convertSingleImage = (imageId: string, options: ConvertOptions) => {
@@ -130,15 +189,46 @@ export const useConvert = () => {
   }
 
   const downloadAllImages = (outputFormat: string) => {
-    images.forEach(image => {
-      if (image.convertedUrl) {
-        const link = document.createElement('a')
-        const originalName = image.file.name.split('.')[0]
-        link.download = `${originalName}_converted.${outputFormat}`
-        link.href = image.convertedUrl
-        link.click()
-      }
+    const convertedImages = images.filter(img => img.convertedUrl)
+    convertedImages.forEach(image => {
+      const link = document.createElement('a')
+      const originalName = image.file.name.split('.')[0]
+      link.download = `${originalName}_converted.${outputFormat}`
+      link.href = image.convertedUrl!
+      link.click()
     })
+  }
+
+  const downloadAllImagesAsZip = async (outputFormat: string) => {
+    const convertedImages = images.filter(img => img.convertedUrl)
+    if (convertedImages.length === 0) return
+
+    const zip = new JSZip()
+    
+    for (const image of convertedImages) {
+      if (image.convertedUrl) {
+        const response = await fetch(image.convertedUrl)
+        const blob = await response.blob()
+        
+        const originalName = image.file.name.split('.')[0]
+        const fileName = `${originalName}_converted.${outputFormat}`
+        
+        if (image.zipPath) {
+          const dirPath = image.zipPath.substring(0, image.zipPath.lastIndexOf('/'))
+          const fullPath = dirPath ? `${dirPath}/${fileName}` : fileName
+          zip.file(fullPath, blob)
+        } else {
+          zip.file(fileName, blob)
+        }
+      }
+    }
+    
+    const zipBlob = await zip.generateAsync({ type: 'blob' })
+    const link = document.createElement('a')
+    link.download = `converted_images_${outputFormat}.zip`
+    link.href = URL.createObjectURL(zipBlob)
+    link.click()
+    URL.revokeObjectURL(link.href)
   }
 
   const removeImage = (imageId: string) => {
@@ -161,6 +251,7 @@ export const useConvert = () => {
     convertAllImages,
     downloadSingleImage,
     downloadAllImages,
+    downloadAllImagesAsZip,
     removeImage,
     resetImages
   }
